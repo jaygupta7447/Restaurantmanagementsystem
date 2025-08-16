@@ -582,9 +582,10 @@
 
                             </div>
 
+                            <!-- Food Item Dropdown -->
                             <div class="form-group">
-                                <label for="food">Select Food Item</label>
-                                <select id="food" name="food" class="form-control">
+                                <label for="food" class="text-light">Select Food Item</label>
+                                <select id="food" name="food" class="form-control text-light bg-dark">
                                     <option value="">-- Select a Dish --</option>
                                     <option value="Pizza">Pizza</option>
                                     <option value="Burger">Burger</option>
@@ -592,6 +593,27 @@
                                     <option value="Salad">Salad</option>
                                 </select>
                             </div>
+
+                            <!-- Custom CSS to improve dropdown visibility -->
+                            <style>
+                                /* Dropdown base styling */
+                                select.form-control {
+                                    color: #fff;                /* White text */
+                                    background-color: #1c1c1c;  /* Dark dropdown background */
+                                    border: 1px solid #555;     /* Border for visibility */
+                                }
+
+                                /* Dropdown options styling */
+                                select.form-control option {
+                                    color: #000;                /* Black text for dropdown options */
+                                    background-color: #fff;     /* White background for options */
+                                }
+
+                                /* Placeholder option styling */
+                                select.form-control option[value=""] {
+                                    color: #888;                /* Gray text for placeholder */
+                                }
+                            </style>
 
                             <div class="form-group">
                                 <label for="message">Message (optional)</label>
