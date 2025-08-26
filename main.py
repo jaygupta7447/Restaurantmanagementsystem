@@ -59,6 +59,7 @@ def reserve():
     time = request.form.get('reservation_time')
     message = request.form.get('message')
 
+    # Save to DB
     new_entry = Reservation(
         name=name, phone=phone, email=email,
         guests=guests, date=date, time=time, message=message
@@ -66,25 +67,45 @@ def reserve():
     db.session.add(new_entry)
     db.session.commit()
 
-    # Send confirmation email
-    msg = Message("Reservation Confirmation",
-                  sender=os.getenv("MAIL_USERNAME"),
-                  recipients=[email, os.getenv("MAIL_USERNAME")])
-    msg.body = f"""
+    # ---------- Customer Email ----------
+    customer_msg = Message(
+        "Reservation Confirmation",
+        sender=os.getenv("MAIL_USERNAME"),
+        recipients=[email]
+    )
+    customer_msg.body = f"""
 Hello {name},
 
-✅ Your reservation for {guests} guest(s) is confirmed on:
-📅 Date: {date}
-⏰ Time: {time}
+✅ Your reservation is confirmed.
 
-📞 Contact: {phone}
-📝 Message: {message}
+📅 Date: {date}  
+⏰ Time: {time}  
 
 Thanks for choosing FeastIQ!
 """
-    mail.send(msg)
+    mail.send(customer_msg)
+
+    # ---------- Owner Email ----------
+    owner_msg = Message(
+        "New Reservation Received",
+        sender=os.getenv("MAIL_USERNAME"),
+        recipients=[os.getenv("MAIL_USERNAME")]
+    )
+    owner_msg.body = f"""
+📌 New Reservation Details:
+
+👤 Name: {name}  
+📞 Phone: {phone}  
+📧 Email: {email}  
+👥 Guests: {guests}  
+📅 Date: {date}  
+⏰ Time: {time}  
+📝 Message: {message}
+"""
+    mail.send(owner_msg)
 
     return redirect(url_for('home'))
+
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():

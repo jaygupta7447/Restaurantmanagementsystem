@@ -460,7 +460,7 @@
                         <img src="{{ url_for('static', filename='assets/images/image2.png') }}"
                              alt="Chef Hiroshi Tanaka" width="200" height="200">
                         <h3>Chef Hiroshi Tanaka</h3>
-                        <p>Grill Master – Known for BBQ and steak perfection.</p>
+                        <p>FeastIQ – Known for BBQ and steak perfection.</p>
                     </div>
                 </div>
             </div>
@@ -563,63 +563,249 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-
                                 <div class="icon-wrapper">
                                     <ion-icon name="calendar-clear-outline"></ion-icon>
-                                    <input type="date" name="reservation_date" required class="input-field">
+                                    <input type="date" id="reservation_date" name="reservation_date" required
+                                           class="input-field">
                                 </div>
 
                                 <div class="icon-wrapper">
                                     <ion-icon name="time-outline"></ion-icon>
-                                    <select name="reservation_time" class="input-field" required>
-                                        {% for hour in ['08:00am', '09:00am', '10:00am', '11:00am', '12:00pm',
-                                        '01:00pm', '02:00pm', '03:00pm', '04:00pm', '05:00pm', '06:00pm', '07:00pm',
-                                        '08:00pm', '09:00pm'] %}
-                                        <option value="{{ hour }}">{{ hour }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <select id="reservation_time" name="reservation_time" class="input-field"
+                                            required></select>
                                 </div>
+
+                                <script>
+                                    document.addEventListener("DOMContentLoaded", function () {
+                                        const timeDropdown = document.getElementById("reservation_time");
+                                        const dateInput = document.getElementById("reservation_date");
+
+                                        const times = [
+                                            "08:00am", "09:00am", "10:00am", "11:00am", "12:00pm",
+                                            "01:00pm", "02:00pm", "03:00pm", "04:00pm", "05:00pm",
+                                            "06:00pm", "07:00pm", "08:00pm", "09:00pm"
+                                        ];
+
+                                        // Convert "hh:mmam/pm" into 24h format
+                                        function convertTo24h(timeStr) {
+                                            let [time, modifier] = timeStr.split(/(am|pm)/i);
+                                            let [hours, minutes] = time.split(":").map(Number);
+
+                                            if (modifier.toLowerCase() === "pm" && hours < 12) {
+                                                hours += 12;
+                                            }
+                                            if (modifier.toLowerCase() === "am" && hours === 12) {
+                                                hours = 0;
+                                            }
+                                            return { hours, minutes };
+                                        }
+
+                                        // Helper to add option
+                                        function addOption(value) {
+                                            const option = document.createElement("option");
+                                            option.value = value;
+                                            option.textContent = value;
+                                            timeDropdown.appendChild(option);
+                                        }
+
+                                        // Populate times based on selected date
+                                        function populateTimes(selectedDate) {
+                                            timeDropdown.innerHTML = ""; // clear old options
+
+                                            const now = new Date();
+                                            const todayStr = now.toISOString().split("T")[0];
+                                            const selectedStr = selectedDate.toISOString().split("T")[0];
+
+                                            times.forEach(t => {
+                                                const { hours, minutes } = convertTo24h(t);
+
+                                                // Future date → all slots
+                                                if (selectedStr > todayStr) {
+                                                    addOption(t);
+                                                }
+                                                // Today → only future slots
+                                                else if (selectedStr === todayStr) {
+                                                    if (hours > now.getHours() || (hours === now.getHours() && minutes > now.getMinutes())) {
+                                                        addOption(t);
+                                                    }
+                                                }
+                                                // Past date → nothing
+                                            });
+
+                                            // If no options available
+                                            if (timeDropdown.options.length === 0) {
+                                                const option = document.createElement("option");
+                                                option.textContent = (selectedStr < todayStr) ?
+                                                    "No slots available for past date" :
+                                                    "No slots available today";
+                                                option.disabled = true;
+                                                option.selected = true;
+                                                timeDropdown.appendChild(option);
+                                            }
+                                        }
+
+                                        // Set default date to today
+                                        const today = new Date().toISOString().split("T")[0];
+                                        dateInput.value = today;
+                                        populateTimes(new Date(today));
+
+                                        // Update times when date changes
+                                        dateInput.addEventListener("change", function () {
+                                            populateTimes(new Date(this.value));
+                                        });
+                                    });
+                                </script>
+
 
                             </div>
 
                             <!-- Food Item Dropdown -->
                             <div class="form-group">
                                 <label for="food" class="text-light">Select Food Item</label>
-                                <select id="food" name="food" class="form-control text-light bg-dark">
+                                <select id="food" name="food" class="form-control text-light bg-dark" required>
                                     <option value="">-- Select a Dish --</option>
-                                    <option value="Pizza">Pizza</option>
-                                    <option value="Burger">Burger</option>
-                                    <option value="Pasta">Pasta</option>
-                                    <option value="Salad">Salad</option>
+
+                                    <optgroup label="Starters">
+                                        <option value="Paneer Tikka - 180">Paneer Tikka - ₹180</option>
+                                        <option value="Spring Rolls - 150">Spring Rolls - ₹150</option>
+                                        <option value="Hara Bhara Kebab - 160">Hara Bhara Kebab - ₹160</option>
+                                        <option value="Chili Paneer - 200">Chili Paneer - ₹200</option>
+                                    </optgroup>
+
+                                    <optgroup label="Main Course">
+                                        <option value="Dal Makhani - 220">Dal Makhani - ₹220</option>
+                                        <option value="Paneer Butter Masala - 280">Paneer Butter Masala - ₹280</option>
+                                        <option value="Pulao - 240">Pulao - ₹240</option>
+                                        <option value="Palak Paneer - 260">Palak Paneer - ₹260</option>
+                                        <option value="Malai Kofta - 270">Malai Kofta - ₹270</option>
+                                    </optgroup>
+
+                                    <optgroup label="Desserts">
+                                        <option value="Gulab Jamun - 120">Gulab Jamun - ₹120</option>
+                                        <option value="Rasmalai - 140">Rasmalai - ₹140</option>
+                                        <option value="Ice Cream Sundae - 180">Ice Cream Sundae - ₹180</option>
+                                        <option value="Chocolate Brownie - 200">Chocolate Brownie - ₹200</option>
+                                        <option value="Cheesecake - 250">Cheesecake - ₹250</option>
+                                    </optgroup>
+
+                                    <optgroup label="Beverages">
+                                        <option value="Masala Chai - 60">Masala Chai - ₹60</option>
+                                        <option value="Cold Coffee - 120">Cold Coffee - ₹120</option>
+                                        <option value="Lassi (Sweet/Salted) - 100">Lassi (Sweet/Salted) - ₹100</option>
+                                        <option value="Fresh Lime Soda - 90">Fresh Lime Soda - ₹90</option>
+                                        <option value="Mojito - 150">Mojito - ₹150</option>
+                                        <option value="Soft Drink - 80">Soft Drink - ₹80</option>
+                                    </optgroup>
                                 </select>
                             </div>
 
-                            <!-- Custom CSS to improve dropdown visibility -->
+                            <!-- Quantity Selector -->
+                            <div class="form-group mt-2">
+                                <label for="quantity" class="text-light">Select Quantity</label>
+                                <input type="number" id="quantity" name="quantity"
+                                       class="form-control bg-dark text-light" min="1" value="1" required>
+                            </div>
+
+                            <!-- Button to add food -->
+                            <button type="button" class="btn btn-warning mt-2" onclick="addFood()">Add to List</button>
+
+                            <!-- Food List -->
+                            <div id="food-list"></div>
+
                             <style>
-                                /* Dropdown base styling */
-                                select.form-control {
-                                    color: #fff;                /* White text */
-                                    background-color: #1c1c1c;  /* Dark dropdown background */
-                                    border: 1px solid #555;     /* Border for visibility */
+                                #food-list {
+                                    margin-top: 20px;
                                 }
 
-                                /* Dropdown options styling */
-                                select.form-control option {
-                                    color: #000;                /* Black text for dropdown options */
-                                    background-color: #fff;     /* White background for options */
+                                .food-card {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    background: #1c1c1c;
+                                    color: #f5c542;
+                                    padding: 12px 18px;
+                                    margin: 8px 0;
+                                    border-radius: 10px;
+                                    border: 1px solid #f5c542;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+                                    transition: transform 0.2s;
                                 }
 
-                                /* Placeholder option styling */
-                                select.form-control option[value=""] {
-                                    color: #888;                /* Gray text for placeholder */
+                                .food-card:hover {
+                                    transform: scale(1.02);
+                                }
+
+                                .remove-btn {
+                                    background: transparent;
+                                    border: 1px solid #f5c542;
+                                    color: #f5c542;
+                                    padding: 6px 14px;
+                                    border-radius: 6px;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                }
+
+                                .remove-btn:hover {
+                                    background: #f5c542;
+                                    color: #000;
                                 }
                             </style>
+
+                            <script>
+                                let totalPrice = 0;
+
+                                function addFood() {
+                                    const foodSelect = document.getElementById("food");
+                                    const selectedFood = foodSelect.value;
+                                    const quantityInput = document.getElementById("quantity");
+                                    const quantity = parseInt(quantityInput.value);
+
+                                    if (selectedFood === "" || quantity < 1) return;
+
+                                    const foodList = document.getElementById("food-list");
+
+                                    // Extract name and price
+                                    const [foodName, price] = selectedFood.split(" - ");
+                                    const foodPrice = parseInt(price);
+                                    const itemTotal = foodPrice * quantity;
+
+                                    // Create card
+                                    const card = document.createElement("div");
+                                    card.classList.add("food-card");
+
+                                    // Add food text with quantity
+                                    const foodText = document.createElement("span");
+                                    foodText.innerText = `${foodName} × ${quantity} = ₹${itemTotal}`;
+
+                                    // Remove button
+                                    const removeBtn = document.createElement("button");
+                                    removeBtn.classList.add("remove-btn");
+                                    removeBtn.innerText = "❌ Remove";
+                                    removeBtn.onclick = () => {
+                                        totalPrice -= itemTotal;
+                                        document.getElementById("total-price").innerText = totalPrice;
+                                        card.remove();
+                                    };
+
+                                    // Append elements
+                                    card.appendChild(foodText);
+                                    card.appendChild(removeBtn);
+                                    foodList.appendChild(card);
+
+
+                                    // Reset fields
+                                    foodSelect.value = "";
+                                    quantityInput.value = 1;
+                                }
+                            </script>
 
                             <div class="form-group">
                                 <label for="message">Message (optional)</label>
                                 <textarea id="message" name="message"
+                                          class="input-field" rows="4"
                                           placeholder="Special request or message"></textarea>
                             </div>
+
 
                             <button type="submit" class="btn btn-secondary">
                                 <span class="text text-1">Book A Table</span>
